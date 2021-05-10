@@ -34,7 +34,19 @@ ng.module('opentok', [])
         connections: [],
         publishers: [],
         init: function(apiKey, sessionId, token, cb) {
-          this.session = OT.initSession(apiKey, sessionId);
+          this.session = OT.initSession(apiKey, sessionId, {
+            iceConfig: {
+              includeServers: 'all',
+              transportPolicy: 'relay',
+              customServers: [
+                {
+                  urls: [
+                    'stun:ip-34-228-34-29.proxy.dev.tokbox.com:3478',
+                  ],
+                },
+              ],
+            },
+          });
 
           OTSession.session.on({
             sessionConnected: function() {
