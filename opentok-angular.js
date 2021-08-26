@@ -169,7 +169,7 @@ ng.module('opentok', [])
                 });
               });
               publisherVideo.srcObject = stream;
-            });
+            }).catch(error => scope.$emit('otPublisherError', error, { id: 'screenPublisher' }));
             publisherVideo.play();
             canvas = document.createElement('canvas');
             canvas.width = width;
