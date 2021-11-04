@@ -8,6 +8,25 @@
  *  @License: Released under the MIT license (http://opensource.org/licenses/MIT)
  **/
 
+/**
+ * Sets contentHint for videoTrack of MediaStream
+ * @param {MediaStream} mediaStream
+ * @param {String} contentHint, one of "", "motion", "detail" or "text"
+ */
+const setVideoContentHint = (mediaStream, contentHint) => {
+  const videoTrack = mediaStream.getVideoTracks()[0];
+  if (!videoTrack) {
+    console.error('Tried to set contentHint but no video track is present');
+    return;
+  }
+  if (videoTrack.contentHint === undefined) {
+    console.error('contentHint not supported by this browser');
+    return;
+  }
+  videoTrack.contentHint = contentHint;
+  console.log('The contentHint of the VideoTrack has been changed to: ', videoTrack.contentHint);
+};
+
 if (!window.OT) throw new Error('You must include the OT library before the OT_Angular library');
 
 var ng;
@@ -154,6 +173,7 @@ ng.module('opentok', [])
             const width = props.screenwidth || 1280;
             const height = props.screenheight || 720;
             const framerate = props.framerate || 30;
+            const contentHint = 'detail';
             publisherVideo = document.createElement('video');
             navigator.mediaDevices.getDisplayMedia({ video: { width, height }, audio: false }).then((stream) => {
               stream.getTracks().forEach((track) => {
@@ -168,6 +188,7 @@ ng.module('opentok', [])
                   }
                 });
               });
+              setVideoContentHint(stream, 'detail');
               publisherVideo.srcObject = stream;
             }).catch(error => scope.$emit('otPublisherError', error, { id: 'screenPublisher' }));
             publisherVideo.play();
