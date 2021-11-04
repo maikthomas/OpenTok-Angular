@@ -153,7 +153,7 @@ ng.module('opentok', [])
             // Default values: HD at 15fps
             const width = props.screenwidth || 1280;
             const height = props.screenheight || 720;
-            const framerate = props.framerate || 15;
+            const framerate = props.framerate || 30;
             publisherVideo = document.createElement('video');
             navigator.mediaDevices.getDisplayMedia({ video: { width, height }, audio: false }).then((stream) => {
               stream.getTracks().forEach((track) => {
