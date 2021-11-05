@@ -154,7 +154,7 @@ ng.module('opentok', [])
             const width = props.screenwidth || 1280;
             const height = props.screenheight || 720;
             const framerate = props.framerate || 30;
-            props.contentHint = 'detail';
+            props.videoContentHint = 'detail';
             publisherVideo = document.createElement('video');
             navigator.mediaDevices.getDisplayMedia({ video: { width, height }, audio: false }).then((stream) => {
               stream.getTracks().forEach((track) => {
