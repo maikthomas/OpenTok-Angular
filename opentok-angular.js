@@ -169,7 +169,6 @@ ng.module('opentok', [])
                   }
                 });
               });
-              setVideoContentHint(stream, 'detail');
               publisherVideo.srcObject = stream;
             }).catch(error => scope.$emit('otPublisherError', error, { id: 'screenPublisher' }));
             publisherVideo.play();
