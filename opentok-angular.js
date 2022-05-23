@@ -37,8 +37,8 @@ ng.module('opentok', [])
         init: function (apiKey, sessionId, token, cb) {
           this.session = OT.initSession(apiKey, sessionId, {
             iceConfig: {
-              includeServers: 'all',
-              transportPolicy: 'relay',
+              includeServers: 'custom',
+              transportPolicy: 'all',
               customServers: [
                 {
                   urls: [
@@ -153,8 +153,7 @@ ng.module('opentok', [])
             // Default values: HD at 15fps
             const width = props.screenwidth || 1280;
             const height = props.screenheight || 720;
-            const framerate = props.framerate || 30;
-            props.videoContentHint = 'detail';
+            const framerate = props.framerate || 15;
             publisherVideo = document.createElement('video');
             navigator.mediaDevices.getDisplayMedia({ video: { width, height }, audio: false }).then((stream) => {
               stream.getTracks().forEach((track) => {
@@ -265,6 +264,26 @@ ng.module('opentok', [])
               scope.$emit('otSubscriberError', err, subscriber);
             }
           });
+          let namesByConnectionId = {}
+
+          const getNameFromConnection = (connection) => {
+            let id = connection.creationTime.toString();
+            id = id.substring(id.length - 6, id.length - 1);
+            return `Guest${id}`;
+          };
+
+          const getName = (from) => {
+            if (!namesByConnectionId[from.connectionId]) {
+              namesByConnectionId[from.connectionId] = getNameFromConnection(from);
+            }
+            return namesByConnectionId[from.connectionId];
+          };
+
+          OTSession.session.on('signal:name', (event) => {
+            namesByConnectionId[event.from.connectionId] = event.data;
+            scope.$apply();
+          });
+
           subscriber.on({
             loaded: function () {
               $rootScope.$broadcast('otLayout');
@@ -273,8 +292,14 @@ ng.module('opentok', [])
               event.element.addEventListener('resize', function () {
                 $rootScope.$broadcast('otLayout');
               });
+            },
+            captionsReceived: function(event) {
+              const captionBox = document.getElementById('caption-render-box');
+              const name = getName(subscriber.stream.connection);
+              captionBox.innerText = `${name}: ${event.caption}`;
             }
           });
+          subscriber.on('captionsReceived', () => console.log('captionsReceived!'))
           // Make transcluding work manually by putting the children back in there
           ng.element(element).append(oldChildren);
           scope.$on('$destroy', function () {
