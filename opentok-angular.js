@@ -300,7 +300,6 @@ ng.module('opentok', [])
               captionBox.innerText = `${name}: ${event.caption}`;
             }
           });
-          subscriber.on('captionsReceived', () => console.log('captionsReceived!'))
           // Make transcluding work manually by putting the children back in there
           ng.element(element).append(oldChildren);
           scope.$on('$destroy', function () {
