@@ -293,6 +293,8 @@ ng.module('opentok', [])
               event.element.addEventListener('resize', function () {
                 $rootScope.$broadcast('otLayout');
               });
+              // TODO ADD A BUTTON
+              subscriber.subscribeToCaptions(true);
             },
             captionsReceived: function(event) {
               const captionBox = document.getElementById('caption-render-box');
