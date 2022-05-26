@@ -294,7 +294,7 @@ ng.module('opentok', [])
                 $rootScope.$broadcast('otLayout');
               });
               // TODO ADD A BUTTON
-              // subscriber.subscribeToCaptions(true);
+              subscriber.subscribeToCaptions(true);
             },
             captionsReceived: function(event) {
               const captionBox = document.getElementById('caption-render-box');
