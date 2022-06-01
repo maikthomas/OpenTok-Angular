@@ -311,3 +311,30 @@ ng.module('opentok', [])
       };
     }
   ]);
+
+  // Maybe this should be an object
+  const captionSubscriberTracker = () => {
+    const MAX_SUBS_ON_SCREEN = 5;
+    // let's have an ordered array of objects 
+    // we will then interate over the array
+
+    // We will need a timeout running for each active subscriber I think
+
+    // we should remove the last element of the array if it exceeds the size
+    let captionsArray = []
+    // the object should have a shape {caption, streamId, timeout}
+
+    // This function should be called by handleCaptionsEvent
+    const renderCaptionsArray = () => {
+    }
+
+    const handleCaptionsEvent = () => {
+      // if the streamId is already represented we push to the top and reset the timer
+      // otherwise we push this to the top and pop out and the last element and stop it's timer
+
+      if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
+        // pop the last element and clear its timer
+      }
+    }
+
+  }
