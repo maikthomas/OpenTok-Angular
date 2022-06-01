@@ -265,20 +265,20 @@ ng.module('opentok', [])
               scope.$emit('otSubscriberError', err, subscriber);
             }
           });
-          let namesByConnectionId = {}
+          // let namesByConnectionId = {}
 
-          const getNameFromConnection = (connection) => {
-            let id = connection.creationTime.toString();
-            id = id.substring(id.length - 6, id.length - 1);
-            return `Guest${id}`;
-          };
+          // const getNameFromConnection = (connection) => {
+          //   let id = connection.creationTime.toString();
+          //   id = id.substring(id.length - 6, id.length - 1);
+          //   return `Guest${id}`;
+          // };
 
-          const getName = (from) => {
-            if (!namesByConnectionId[from.connectionId]) {
-              namesByConnectionId[from.connectionId] = getNameFromConnection(from);
-            }
-            return namesByConnectionId[from.connectionId];
-          };
+          // const getName = (from) => {
+          //   if (!namesByConnectionId[from.connectionId]) {
+          //     namesByConnectionId[from.connectionId] = getNameFromConnection(from);
+          //   }
+          //   return namesByConnectionId[from.connectionId];
+          // };
 
           OTSession.session.on('signal:name', (event) => {
             namesByConnectionId[event.from.connectionId] = event.data;
@@ -296,11 +296,11 @@ ng.module('opentok', [])
               // TODO ADD A BUTTON
               subscriber.subscribeToCaptions(true);
             },
-            captionsReceived: function(event) {
-              const captionBox = document.getElementById('caption-render-box');
-              const name = getName(subscriber.stream.connection);
-              captionBox.innerText = `${name}: ${event.caption}`;
-            }
+            // captionsReceived: function(event) {
+            //   const captionBox = document.getElementById('caption-render-box');
+            //   const name = getName(subscriber.stream.connection);
+            //   captionBox.innerText = `${name}: ${event.caption}`;
+            // }
           });
           // Make transcluding work manually by putting the children back in there
           ng.element(element).append(oldChildren);
@@ -315,26 +315,76 @@ ng.module('opentok', [])
   // Maybe this should be an object
   const captionSubscriberTracker = () => {
     const MAX_SUBS_ON_SCREEN = 5;
+    const CAPTIONS_TIMEOUT = 5 * 100;
+
+    const captionBox = document.getElementById('caption-render-box');
+
+    let namesByConnectionId = {};
+    const getNameFromConnection = (connection) => {
+      let id = connection.creationTime.toString();
+      id = id.substring(id.length - 6, id.length - 1);
+      return `Guest${id}`;
+    };
+    const getName = (from) => {
+      if (!namesByConnectionId[from.connectionId]) {
+        namesByConnectionId[from.connectionId] = getNameFromConnection(from);
+      }
+      return namesByConnectionId[from.connectionId];
+    };
+  
     // let's have an ordered array of objects 
     // we will then interate over the array
 
+    // Should the array elements be objects?
     // We will need a timeout running for each active subscriber I think
 
     // we should remove the last element of the array if it exceeds the size
     let captionsArray = []
-    // the object should have a shape {caption, streamId, timeout}
+    // the object should have a shape {caption, streamId, timeout, name}
 
     // This function should be called by handleCaptionsEvent
     const renderCaptionsArray = () => {
+      let captionString = ''
+      captionsArray.forEach((captionElm) => {
+        captionString = `${captionString} \n ${captionElm.name}: ${captionElm.caption}`
+        captionBox.innerText = captionString;
+      })
     }
 
-    const handleCaptionsEvent = () => {
+    const alreadyHasStream = (streamId) => {
+      return !!captionsArray.filter((elm) => elm.streamId === streamId);
+    }
+
+    // this function should just clear the timer and remove from the array, nothing else
+    const clearElementWithStreamId = (streamId) => {
+      
+    }
+    const handleCaptionsEvent = (captionEvent,subscriber) => {
       // if the streamId is already represented we push to the top and reset the timer
       // otherwise we push this to the top and pop out and the last element and stop it's timer
+
+      const name = getName(subscriber.stream.connection);
+
+      // have to check if the array contains the streamID already
+      if (alreadyHasStream(captionEvent.streamId)){
+        // we need to find the existing element and move it to the front and update the timeout
+
+        renderCaptionsArray();
+        return;
+      }
+      // let's add the array plus the timer
+
+
+
 
       if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
         // pop the last element and clear its timer
       }
+      renderCaptionsArray();
     }
+
+
+
+
 
   }
