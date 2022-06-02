@@ -357,7 +357,16 @@ ng.module('opentok', [])
 
     // this function should just clear the timer and remove from the array, nothing else
     const clearElementWithStreamId = (streamId) => {
-      
+      const indexOfElement = captionsArray.findIndex((element) => {
+        element.streamId ===streamId
+      })
+      clearTimeout(captionsArray[indexOfElement].timeOutFunction)
+      captionsArray.splice(indexOfElement,1)
+    }
+
+    // We should remove the elemnt in question once we timeout
+    const timeOutHandler = (streamId) => {
+
     }
     const handleCaptionsEvent = (captionEvent,subscriber) => {
       // if the streamId is already represented we push to the top and reset the timer
