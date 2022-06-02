@@ -312,6 +312,7 @@ ng.module('opentok', [])
     }
   ]);
 
+  // ---------------------------------------------------------------------------
   // Maybe this should be an object
   const captionSubscriberTracker = () => {
     const MAX_SUBS_ON_SCREEN = 5;
@@ -364,36 +365,37 @@ ng.module('opentok', [])
       captionsArray.splice(indexOfElement,1)
     }
 
-    // We should remove the elemnt in question once we timeout
+    // We should remove the elemnt in question once we timeout and then rerender
     const timeOutHandler = (streamId) => {
-
+      clearElementWithStreamId(streamId)
+      renderCaptionsArray();
     }
     const handleCaptionsEvent = (captionEvent,subscriber) => {
       // if the streamId is already represented we push to the top and reset the timer
       // otherwise we push this to the top and pop out and the last element and stop it's timer
-
+      // {captionText, streamId, timeout, name}
       const name = getName(subscriber.stream.connection);
+      const captionElement = {
+        streamId: captionEvent.streamId,
+        captionText: captionEvent.caption,
+        timeout: setTimeout(timeOutHandler,CAPTIONS_TIMEOUT),
+        name,
+      }
 
       // have to check if the array contains the streamID already
       if (alreadyHasStream(captionEvent.streamId)){
         // we need to find the existing element and move it to the front and update the timeout
-
+        clearElementWithStreamId(captionEvent.streamId)
+        captionsArray.unshift(captionElement)
         renderCaptionsArray();
         return;
+      } else {
+        captionsArray.unshift(captionElement)
+        // We don't allow too many subscribers on screen
+        if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
+          clearElementWithStreamId(captionsArray[MAX_SUBS_ON_SCREEN].streamId)
+        }
+        renderCaptionsArray();
       }
-      // let's add the array plus the timer
-
-
-
-
-      if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
-        // pop the last element and clear its timer
-      }
-      renderCaptionsArray();
     }
-
-
-
-
-
   }
