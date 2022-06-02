@@ -332,18 +332,12 @@ ng.module('opentok', [])
       }
       return namesByConnectionId[from.connectionId];
     };
-  
-    // let's have an ordered array of objects 
-    // we will then interate over the array
-
-    // Should the array elements be objects?
-    // We will need a timeout running for each active subscriber I think
 
     // we should remove the last element of the array if it exceeds the size
     let captionsArray = []
-    // the object should have a shape {caption, streamId, timeout, name}
+    // the object should have the shape {caption, streamId, timeout, name}
 
-    // This function should be called by handleCaptionsEvent
+    // Actually adds the text to the box, maybe make the text smaller based on size?
     const renderCaptionsArray = () => {
       let captionString = ''
       captionsArray.forEach((captionElm) => {
