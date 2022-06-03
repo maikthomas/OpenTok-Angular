@@ -35,7 +35,7 @@ ng.module('opentok', [])
         publishers: [],
 
         init: function (apiKey, sessionId, token, cb) {
-          // We need captionsArray to be avaible to all subscribers
+          // We need captionsArray to be available to all subscribers
           $rootScope.captionsArray = [];
           this.session = OT.initSession(apiKey, sessionId, {
             iceConfig: {
@@ -296,7 +296,7 @@ ng.module('opentok', [])
 
   const captionSubscriberTracker = (OTSession, $rootScope) => {
     const MAX_SUBS_ON_SCREEN = 4;
-    const CAPTIONS_TIMEOUT = 5 * 1000;
+    const CAPTIONS_TIMEOUT_MSEC = 5 * 1000;
 
     const captionBox = document.getElementById('caption-render-box');
 
@@ -335,7 +335,7 @@ ng.module('opentok', [])
     }
 
     const alreadyHasStream = (streamId) => {
-      return (captionsArray.filter((elm) => elm.streamId === streamId)).length > 0;
+      return !!captionsArray.find((elm) => elm.streamId === streamId);
     }
 
     // this function should just clear the timer and remove from the array, nothing else
@@ -363,7 +363,7 @@ ng.module('opentok', [])
         captionText: captionEvent.caption,
         timeout: setTimeout(() => {
           timeOutHandler(captionEvent.streamId)
-        },CAPTIONS_TIMEOUT),
+        },CAPTIONS_TIMEOUT_MSEC),
         name,
       }
       // have to check if the array contains the streamID already
