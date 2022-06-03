@@ -305,6 +305,8 @@ ng.module('opentok', [])
     OTSession.session.on('signal:name', (event) => {
       namesByConnectionId[event.from.connectionId] = event.data;
     });
+    // The following two functions are copied from opentok-textchat to ensure the speaker name
+    // and textchat name line up
     const getNameFromConnection = (connection) => {
       let id = connection.creationTime.toString();
       id = id.substring(id.length - 6, id.length - 1);
@@ -319,15 +321,13 @@ ng.module('opentok', [])
 
     const captionsArray = $rootScope.captionsArray;
 
+    const generateCaptionsString = () => {
+      return captionsArray.map((captionElm) => {
+        return `${captionElm.name}: ${captionElm.captionText}`
+      }).join('\n');
+    }
     const renderCaptionsArray = () => {
-      let captionString = '';
-      captionsArray.forEach((captionElm) => {
-        if (captionString === ''){
-          captionString = `${captionElm.name}: ${captionElm.captionText}`
-        } else {
-          captionString = `${captionString} \n ${captionElm.name}: ${captionElm.captionText}`
-        }
-      })
+      const captionString = captionsArray.length > 0 ? generateCaptionsString() : '';
       captionBox.innerText = captionString;
     }
 
