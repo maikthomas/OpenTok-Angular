@@ -294,9 +294,7 @@ ng.module('opentok', [])
     }
   ]);
 
-  // ---------------------------------------------------------------------------
   const captionSubscriberTracker = (OTSession, $rootScope) => {
-    console.log(`THIS SHOULD ONLY BE CALLED ONCE!!!!!!!!!!!`)
     const MAX_SUBS_ON_SCREEN = 4;
     const CAPTIONS_TIMEOUT = 5 * 1000;
 
@@ -325,12 +323,15 @@ ng.module('opentok', [])
 
     // Actually adds the text to the box, maybe make the text smaller based on size?
     const renderCaptionsArray = () => {
-      console.log(`in renderCaptionsArray, length of array is: ${captionsArray.length}`)
       let captionString = '';
       captionsArray.forEach((captionElm) => {
-        captionString = `${captionString} \n ${captionElm.name}: ${captionElm.captionText}`
-        captionBox.innerText = captionString;
+        if (captionString === ''){
+          captionString = `${captionElm.name}: ${captionElm.captionText}`
+        } else {
+          captionString = `${captionString} \n ${captionElm.name}: ${captionElm.captionText}`
+        }
       })
+      captionBox.innerText = captionString;
     }
 
     const alreadyHasStream = (streamId) => {
@@ -342,7 +343,7 @@ ng.module('opentok', [])
       const indexOfElement = captionsArray.findIndex((element) => {
         return element.streamId === streamId
       })
-      if (indexOfElement === -1) {debugger}
+
       clearTimeout(captionsArray[indexOfElement].timeout)
       captionsArray.splice(indexOfElement,1)
     }
@@ -377,11 +378,9 @@ ng.module('opentok', [])
       captionsArray.unshift(captionElement)
       // We don't allow too many subscribers on screen
       if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
-        console.log('We should NOT be here')
         clearElementWithStreamId(captionsArray[MAX_SUBS_ON_SCREEN].streamId)
       }
       renderCaptionsArray();
     }
     return handleCaptionsEvent;
   }
-  
