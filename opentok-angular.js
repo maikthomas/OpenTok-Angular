@@ -317,11 +317,8 @@ ng.module('opentok', [])
       return namesByConnectionId[from.connectionId];
     };
 
-    // we should remove the last element of the array if it exceeds the size
     const captionsArray = $rootScope.captionsArray;
-    // the object should have the shape {caption, streamId, timeout, name}
 
-    // Actually adds the text to the box, maybe make the text smaller based on size?
     const renderCaptionsArray = () => {
       let captionString = '';
       captionsArray.forEach((captionElm) => {
@@ -338,7 +335,6 @@ ng.module('opentok', [])
       return !!captionsArray.find((elm) => elm.streamId === streamId);
     }
 
-    // this function should just clear the timer and remove from the array, nothing else
     const clearElementWithStreamId = (streamId) => {
       const indexOfElement = captionsArray.findIndex((element) => {
         return element.streamId === streamId
@@ -348,27 +344,23 @@ ng.module('opentok', [])
       captionsArray.splice(indexOfElement,1)
     }
 
-    // We should remove the elemnt in question once we timeout and then rerender
-    const timeOutHandler = (streamId) => {
+    const timeoutHandler = (streamId) => {
       clearElementWithStreamId(streamId)
       renderCaptionsArray();
     }
+
     const handleCaptionsEvent = (captionEvent,subscriber) => {
-      // if the streamId is already represented we push to the top and reset the timer
-      // otherwise we push this to the top and pop out and the last element and stop it's timer
-      // {captionText, streamId, timeout, name}
       const name = getName(subscriber.stream.connection);
       const captionElement = {
         streamId: captionEvent.streamId,
         captionText: captionEvent.caption,
         timeout: setTimeout(() => {
-          timeOutHandler(captionEvent.streamId)
+          timeoutHandler(captionEvent.streamId)
         },CAPTIONS_TIMEOUT_MSEC),
         name,
       }
-      // have to check if the array contains the streamID already
+
       if (alreadyHasStream(captionEvent.streamId)){
-        // we need to find the existing element and move it to the front and update the timeout
         clearElementWithStreamId(captionEvent.streamId)
         captionsArray.unshift(captionElement)
         renderCaptionsArray();
@@ -376,11 +368,11 @@ ng.module('opentok', [])
       } 
 
       captionsArray.unshift(captionElement)
-      // We don't allow too many subscribers on screen
       if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
         clearElementWithStreamId(captionsArray[MAX_SUBS_ON_SCREEN].streamId)
       }
       renderCaptionsArray();
     }
+
     return handleCaptionsEvent;
   }
