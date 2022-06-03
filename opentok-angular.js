@@ -332,7 +332,7 @@ ng.module('opentok', [])
     }
 
     const alreadyHasStream = (streamId) => {
-      return !!captionsArray.find((elm) => elm.streamId === streamId);
+      return captionsArray.some((elm) => elm.streamId === streamId);
     }
 
     const clearElementWithStreamId = (streamId) => {
