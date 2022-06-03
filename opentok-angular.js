@@ -339,9 +339,10 @@ ng.module('opentok', [])
       const indexOfElement = captionsArray.findIndex((element) => {
         return element.streamId === streamId
       })
-
-      clearTimeout(captionsArray[indexOfElement].timeout)
-      captionsArray.splice(indexOfElement,1)
+      if (indexOfElement > -1) { 
+        clearTimeout(captionsArray[indexOfElement].timeout)
+        captionsArray.splice(indexOfElement,1)
+      }
     }
 
     const timeoutHandler = (streamId) => {
