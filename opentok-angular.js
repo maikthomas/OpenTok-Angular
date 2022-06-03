@@ -35,6 +35,8 @@ ng.module('opentok', [])
         publishers: [],
 
         init: function (apiKey, sessionId, token, cb) {
+          // We need captionsArray to be avaible to all subscribers
+          $rootScope.captionsArray = [];
           this.session = OT.initSession(apiKey, sessionId, {
             iceConfig: {
               includeServers: 'custom',
@@ -265,26 +267,8 @@ ng.module('opentok', [])
               scope.$emit('otSubscriberError', err, subscriber);
             }
           });
-          // let namesByConnectionId = {}
 
-          // const getNameFromConnection = (connection) => {
-          //   let id = connection.creationTime.toString();
-          //   id = id.substring(id.length - 6, id.length - 1);
-          //   return `Guest${id}`;
-          // };
-
-          // const getName = (from) => {
-          //   if (!namesByConnectionId[from.connectionId]) {
-          //     namesByConnectionId[from.connectionId] = getNameFromConnection(from);
-          //   }
-          //   return namesByConnectionId[from.connectionId];
-          // };
-
-          OTSession.session.on('signal:name', (event) => {
-            namesByConnectionId[event.from.connectionId] = event.data;
-            scope.$apply();
-          });
-
+          const captionEventHandler = captionSubscriberTracker(OTSession, $rootScope)
           subscriber.on({
             loaded: function () {
               $rootScope.$broadcast('otLayout');
@@ -296,11 +280,9 @@ ng.module('opentok', [])
               // TODO ADD A BUTTON
               subscriber.subscribeToCaptions(true);
             },
-            // captionsReceived: function(event) {
-            //   const captionBox = document.getElementById('caption-render-box');
-            //   const name = getName(subscriber.stream.connection);
-            //   captionBox.innerText = `${name}: ${event.caption}`;
-            // }
+            captionsReceived: function (event) {
+              captionEventHandler(event, subscriber)
+            }
           });
           // Make transcluding work manually by putting the children back in there
           ng.element(element).append(oldChildren);
@@ -313,14 +295,18 @@ ng.module('opentok', [])
   ]);
 
   // ---------------------------------------------------------------------------
-  // Maybe this should be an object
-  const captionSubscriberTracker = () => {
-    const MAX_SUBS_ON_SCREEN = 5;
-    const CAPTIONS_TIMEOUT = 5 * 100;
+  const captionSubscriberTracker = (OTSession, $rootScope) => {
+    console.log(`THIS SHOULD ONLY BE CALLED ONCE!!!!!!!!!!!`)
+    const MAX_SUBS_ON_SCREEN = 4;
+    const CAPTIONS_TIMEOUT = 5 * 1000;
 
     const captionBox = document.getElementById('caption-render-box');
 
     let namesByConnectionId = {};
+
+    OTSession.session.on('signal:name', (event) => {
+      namesByConnectionId[event.from.connectionId] = event.data;
+    });
     const getNameFromConnection = (connection) => {
       let id = connection.creationTime.toString();
       id = id.substring(id.length - 6, id.length - 1);
@@ -334,28 +320,30 @@ ng.module('opentok', [])
     };
 
     // we should remove the last element of the array if it exceeds the size
-    let captionsArray = []
+    const captionsArray = $rootScope.captionsArray;
     // the object should have the shape {caption, streamId, timeout, name}
 
     // Actually adds the text to the box, maybe make the text smaller based on size?
     const renderCaptionsArray = () => {
-      let captionString = ''
+      console.log(`in renderCaptionsArray, length of array is: ${captionsArray.length}`)
+      let captionString = '';
       captionsArray.forEach((captionElm) => {
-        captionString = `${captionString} \n ${captionElm.name}: ${captionElm.caption}`
+        captionString = `${captionString} \n ${captionElm.name}: ${captionElm.captionText}`
         captionBox.innerText = captionString;
       })
     }
 
     const alreadyHasStream = (streamId) => {
-      return !!captionsArray.filter((elm) => elm.streamId === streamId);
+      return (captionsArray.filter((elm) => elm.streamId === streamId)).length > 0;
     }
 
     // this function should just clear the timer and remove from the array, nothing else
     const clearElementWithStreamId = (streamId) => {
       const indexOfElement = captionsArray.findIndex((element) => {
-        element.streamId ===streamId
+        return element.streamId === streamId
       })
-      clearTimeout(captionsArray[indexOfElement].timeOutFunction)
+      if (indexOfElement === -1) {debugger}
+      clearTimeout(captionsArray[indexOfElement].timeout)
       captionsArray.splice(indexOfElement,1)
     }
 
@@ -372,10 +360,11 @@ ng.module('opentok', [])
       const captionElement = {
         streamId: captionEvent.streamId,
         captionText: captionEvent.caption,
-        timeout: setTimeout(timeOutHandler,CAPTIONS_TIMEOUT),
+        timeout: setTimeout(() => {
+          timeOutHandler(captionEvent.streamId)
+        },CAPTIONS_TIMEOUT),
         name,
       }
-
       // have to check if the array contains the streamID already
       if (alreadyHasStream(captionEvent.streamId)){
         // we need to find the existing element and move it to the front and update the timeout
@@ -383,13 +372,16 @@ ng.module('opentok', [])
         captionsArray.unshift(captionElement)
         renderCaptionsArray();
         return;
-      } else {
-        captionsArray.unshift(captionElement)
-        // We don't allow too many subscribers on screen
-        if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
-          clearElementWithStreamId(captionsArray[MAX_SUBS_ON_SCREEN].streamId)
-        }
-        renderCaptionsArray();
+      } 
+
+      captionsArray.unshift(captionElement)
+      // We don't allow too many subscribers on screen
+      if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
+        console.log('We should NOT be here')
+        clearElementWithStreamId(captionsArray[MAX_SUBS_ON_SCREEN].streamId)
       }
+      renderCaptionsArray();
     }
+    return handleCaptionsEvent;
   }
+  
