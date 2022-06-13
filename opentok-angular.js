@@ -37,19 +37,7 @@ ng.module('opentok', [])
         init: function (apiKey, sessionId, token, cb) {
           // We need captionsArray to be available to all subscribers
           $rootScope.captionsArray = [];
-          this.session = OT.initSession(apiKey, sessionId, {
-            iceConfig: {
-              includeServers: 'custom',
-              transportPolicy: 'all',
-              customServers: [
-                {
-                  urls: [
-                    'stun:ip-34-228-34-29.proxy.dev.tokbox.com:3478',
-                  ],
-                },
-              ],
-            },
-          });
+          this.session = OT.initSession(apiKey, sessionId);
 
           OTSession.session.on({
             sessionConnected: function () {
