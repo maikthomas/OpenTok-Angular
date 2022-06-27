@@ -33,8 +33,12 @@ ng.module('opentok', [])
         streams: [],
         connections: [],
         publishers: [],
-        init: function(apiKey, sessionId, token, cb) {
-          this.session = OT.initSession(apiKey, sessionId);
+        init: function(apiKey, sessionId, token, options, cb) {
+          if (typeof options === 'function') {
+            cb = options;
+            option = undefined;
+          }
+          this.session = OT.initSession(apiKey, sessionId, options);
 
           OTSession.session.on({
             sessionConnected: function() {
