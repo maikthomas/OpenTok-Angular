@@ -34,10 +34,10 @@ ng.module('opentok', [])
         connections: [],
         publishers: [],
 
-        init: function (apiKey, sessionId, token, cb) {
+        init: function (apiKey, sessionId, token, options, cb) {
           // We need captionsArray to be available to all subscribers
           $rootScope.captionsArray = [];
-          this.session = OT.initSession(apiKey, sessionId);
+          this.session = OT.initSession(apiKey, sessionId, options);
 
           OTSession.session.on({
             sessionConnected: function () {
@@ -327,7 +327,7 @@ ng.module('opentok', [])
       const indexOfElement = captionsArray.findIndex((element) => {
         return element.streamId === streamId
       })
-      if (indexOfElement > -1) { 
+      if (indexOfElement > -1) {
         clearTimeout(captionsArray[indexOfElement].timeout)
         captionsArray.splice(indexOfElement,1)
       }
@@ -354,7 +354,7 @@ ng.module('opentok', [])
         captionsArray.unshift(captionElement)
         renderCaptionsArray();
         return;
-      } 
+      }
 
       captionsArray.unshift(captionElement)
       if (captionsArray.length > MAX_SUBS_ON_SCREEN) {
